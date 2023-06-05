@@ -1,3 +1,4 @@
+use std::collections::{HashMap, HashSet};
 use git2::{BranchType, Repository, RepositoryState};
 
 const EMOJI_LIST: &str = "\
@@ -97,21 +98,28 @@ fn main() {
     let branch_names = branches.map(|branch| {
         let (branch, _) = branch.unwrap();
         branch.name().unwrap().unwrap().strip_prefix(REMOTE_NAME).unwrap().to_string()
-    });
+    }).collect::<Vec<String>>();
 
-    let branch_indexes = branch_names.map(|branch_name| {
+    let mut branch_name_set = HashSet::new();
+    for branch_name in branch_names.clone() {
+        branch_name_set.insert(branch_name);
+    }
+
+    let branch_name_ord_map = branch_names.clone().into_iter().map(|branch_name| {
         let ord = map_ord(branch_name.as_str());
         match ord {
             OrdResult::Ord(i) => {
-                i
+                (branch_name, i)
             }
             OrdResult::Invalid => {
-                -1
+                (branch_name, -1)
             }
         }
-    });
+    }).collect::<HashMap<String, i32>>();
+
     // 输出所有分支名称
-    println!("branches: {:?}", branch_indexes.collect::<Vec<i32>>());
+    println!("branches-with-indexes: {:?}", branch_name_ord_map);
+    println!("branches: {:?}", branch_names);
 }
 
 #[cfg(test)]
