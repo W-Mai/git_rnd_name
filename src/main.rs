@@ -59,6 +59,7 @@ fn map_emoji(ord: i32) -> String {
 
 fn main() {
     // 打开当前目录下的 Git 仓库
+    let repo = Repository::discover(".").unwrap();
 
     // 检查仓库状态
     match repo.state() {
@@ -117,9 +118,28 @@ fn main() {
         }
     }).collect::<HashMap<String, i32>>();
 
+    let mut branch_ords = branch_name_ord_map.values().clone().filter(|i| {
+        **i != -1
+    }).map(|i| {
+        *i
+    }).collect::<Vec<i32>>();
+
+    branch_ords.sort();
+
+    let branch_ords = branch_ords.into_iter().collect::<HashSet<i32>>();
     // 输出所有分支名称
     println!("branches-with-indexes: {:?}", branch_name_ord_map);
     println!("branches: {:?}", branch_names);
+    println!("branch-ords: {:?}", branch_ords);
+
+    let mut new_ord = 1;
+
+    while branch_ords.contains(&new_ord) || branch_name_set.contains(&map_emoji(new_ord)){
+        new_ord += 1;
+    }
+
+    println!("new-ord: {}", new_ord);
+    println!("new-branch-name: {}", map_emoji(new_ord));
 }
 
 #[cfg(test)]
