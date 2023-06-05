@@ -1,8 +1,9 @@
 mod utils;
 
 use std::collections::{HashMap, HashSet};
-use git2::{BranchType, Repository, RepositoryState};
-use crate::utils::{map_emoji, map_ord, OrdResult, parse_args};
+use std::process::exit;
+use git2::{BranchType};
+use crate::utils::{map_emoji, map_ord, open_repo, OrdResult, parse_args};
 
 fn main() {
     let args = parse_args();
@@ -10,30 +11,7 @@ fn main() {
     let remote_name = args.remote.clone();
     let repo_path = args.repo.clone().unwrap_or(".".to_string());
 
-    // 打开当前目录下的 Git 仓库
-    let repo = Repository::discover(repo_path).unwrap();
-
-    // 检查仓库状态
-    match repo.state() {
-        RepositoryState::Clean => {
-            println!("Warning: The repository is not clean");
-        }
-        _ => {}
-    };
-
-    // 获取当前分支名称
-    match repo.head() {
-        Ok(reference) => {
-            if let Some(name) = reference.name() {
-                println!("Current branch: {}", name);
-            } else {
-                println!("Not on any branch");
-            }
-        }
-        Err(e) => {
-            println!("Error: Failed to get current branch name: {}", e);
-        }
-    };
+    let repo = open_repo(repo_path.as_str()).unwrap_or_else(|| { exit(-1); });
 
     let branches = repo.branches(Some(BranchType::Remote)).unwrap().filter(|branch| {
         match branch {

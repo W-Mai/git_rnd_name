@@ -53,6 +53,7 @@ pub fn map_emoji(ord: i32) -> String {
 }
 
 use clap::Parser;
+use git2::{Repository, RepositoryState};
 
 #[derive(Parser, Debug)]
 #[command(author, version)]
@@ -69,6 +70,49 @@ pub struct Args {
 pub fn parse_args() -> Args {
     Args::parse()
 }
+
+pub fn check_repo(repo: &Repository) -> bool {
+    // 检查仓库状态
+    match repo.state() {
+        RepositoryState::Clean => {
+            println!("Warning: The repository is not clean");
+        }
+        _ => {}
+    };
+
+    // 获取当前分支名称
+    return match repo.head() {
+        Ok(reference) => {
+            if let Some(name) = reference.name() {
+                println!("Current branch: {}", name);
+                true
+            } else {
+                println!("Not on any branch");
+                false
+            }
+        }
+        Err(e) => {
+            println!("Error: Failed to get current branch name: {}", e);
+            false
+        }
+    };
+}
+
+pub fn open_repo(path: &str) -> Option<Repository> {
+    match Repository::discover(path) {
+        Ok(repo) => {
+            if !check_repo(&repo) {
+                return None;
+            }
+            Some(repo)
+        }
+        Err(err) => {
+            println!("Failed to open: {}", err);
+            None
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
