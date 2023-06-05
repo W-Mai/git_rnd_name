@@ -2,13 +2,16 @@ mod utils;
 
 use std::collections::{HashMap, HashSet};
 use git2::{BranchType, Repository, RepositoryState};
-use crate::utils::{map_emoji, map_ord, OrdResult};
-
-const REMOTE_NAME: &str = "w-mai/";
+use crate::utils::{map_emoji, map_ord, OrdResult, parse_args};
 
 fn main() {
+    let args = parse_args();
+
+    let remote_name = args.remote.clone();
+    let repo_path = args.repo.clone().unwrap_or(".".to_string());
+
     // 打开当前目录下的 Git 仓库
-    let repo = Repository::discover(".").unwrap();
+    let repo = Repository::discover(repo_path).unwrap();
 
     // 检查仓库状态
     match repo.state() {
@@ -36,7 +39,7 @@ fn main() {
         match branch {
             Ok((branch, _)) => {
                 let name = branch.name().unwrap().unwrap();
-                name.starts_with(REMOTE_NAME)
+                name.starts_with(remote_name.as_str())
             }
             Err(e) => {
                 println!("Error: Failed to get branch name: {}", e);
@@ -47,7 +50,7 @@ fn main() {
 
     let branch_names = branches.map(|branch| {
         let (branch, _) = branch.unwrap();
-        branch.name().unwrap().unwrap().strip_prefix(REMOTE_NAME).unwrap().to_string()
+        branch.name().unwrap().unwrap().strip_prefix(remote_name.as_str()).unwrap().to_string()
     }).collect::<Vec<String>>();
 
     let mut branch_name_set = HashSet::new();

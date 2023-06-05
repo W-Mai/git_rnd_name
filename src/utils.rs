@@ -52,6 +52,24 @@ pub fn map_emoji(ord: i32) -> String {
     result.chars().rev().collect()
 }
 
+use clap::Parser;
+
+#[derive(Parser, Debug)]
+#[command(author, version)]
+#[command(about = "Generate a random git branch name based on remote name you given.")]
+pub struct Args {
+    /// remote names
+    pub(crate) remote: String,
+
+    /// local repo path
+    #[arg(short = 'c', long)]
+    pub(crate) repo: Option<String>,
+}
+
+pub fn parse_args() -> Args {
+    Args::parse()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
