@@ -1,6 +1,12 @@
 use git2::{BranchType, Repository, RepositoryState};
 
-const EMOJI_LIST: &str = "😋😛😝😜🤪🤨🧐🤓🥸🤩🥳😏😒😞😔😟😕🙁😣😖😫😩🥺😀😃😄😁😆🤣😊😇🙂😉😌😍🥰😘😗😙😚🫢👌😎";
+const EMOJI_LIST: &str = "\
+✊✋⬛⭐️️️🌍🌎🌏🌑🌒🌓🌔🌕🌖🌗🌘🌙🌚🌛🌜🌝🌞🌟🍇🍉🍊🍋🍌🍎🍏🍐🐃🐅🐆🐊🐋🐌🐍🐒🐔🐗🐘🐙🐛🐜🐝🐞\
+🐟🐠🐡🐢🐣🐤🐥🐦🐦🐧🐨🐪🐫🐬🐭🐮🐯🐰🐱🐳🐴🐵🐶🐷🐸🐹🐺🐻🐻🐼🐽👀👁👆👇👈👉👊👋👌👌👍👏👐👻👽\
+👿💀💨💩💪💫💫🕷🕸🖐🖖😀😁😂😃😄😆😇😈😉😉😊😋😌😌😍😎😏😐😑😒😔😕😖😗😘😙😚😛😜😝😦😧😨😪😬\
+😮😮😯😱😲😳😴😵😵😶😷😸😹😺😻😼😽😾😿🙀🙂🙈🙉🙊🙌🙏🤌🤏🤐🤑🤓🤔🤗🤘🤙🤚🤛🤜🤜🤝🤞🤟🤠🤡🤣🤣\
+🤤🤥🤨🤩🤪🤫🤭🤯🤲🥰🥱🥲🥳🥴🥶🥸🥺🦀🦁🦂🦄🦅🦆🦇🦈🦉🦊🦋🦍🦎🦏🦐🦑🦒🦓🦕🦖🦗🦘🦛🦞🦟🦣🦧🦬🦭\
+🦾🧐🧠🪐🪰🪱🪲🪳";
 
 const REMOTE_NAME: &str = "w-mai/";
 
@@ -10,17 +16,44 @@ enum OrdResult {
     Invalid,
 }
 
-fn map_ord(c: &str) -> OrdResult {
-    fn get_order(c: &str) -> OrdResult {
+
+fn map_ord(name: &str) -> OrdResult {
+    fn get_order(c: char) -> OrdResult {
         let pos = EMOJI_LIST.char_indices().position(|(_, e)| {
-            e == c.chars().nth(0).unwrap()
+            e == c
         });
         match pos {
-            Some(i) => OrdResult::Ord(i as i32),
+            Some(i) => OrdResult::Ord((i + 1) as i32),
             None => OrdResult::Invalid,
         }
     }
-    get_order(c)
+
+    let ord_base = EMOJI_LIST.char_indices().count() as i32;
+    let mut ord_res = 0;
+    for c in name.char_indices() {
+        let ord = match get_order(c.1) {
+            OrdResult::Ord(i) => {
+                i
+            }
+            OrdResult::Invalid => { return OrdResult::Invalid; }
+        };
+
+        ord_res = ord_res * ord_base + ord;
+    }
+    OrdResult::Ord(ord_res)
+}
+
+fn map_emoji(ord: i32) -> String {
+    let ord_base = EMOJI_LIST.char_indices().count() as i32;
+    let mut ord_res = ord;
+    let mut result = String::new();
+    while ord_res > 0 {
+        ord_res -= 1;
+        let c = EMOJI_LIST.char_indices().nth((ord_res % ord_base) as usize).unwrap().1;
+        result.push(c as char);
+        ord_res /= ord_base;
+    }
+    result.chars().rev().collect()
 }
 
 fn main() {
@@ -72,14 +105,15 @@ fn main() {
             OrdResult::Ord(i) => {
                 i
             }
-            OrdResult::Invalid => { -1 }
+            OrdResult::Invalid => {
+                -1
+            }
         }
     });
     // 输出所有分支名称
     println!("branches: {:?}", branch_indexes.collect::<Vec<i32>>());
 }
 
-// write a test for map_ord function
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -87,49 +121,14 @@ mod tests {
     #[test]
     fn test_map_ord() {
         for emo in EMOJI_LIST.char_indices() {
-            println!("emoji: {}, index: {}", emo.1, emo.0);
+            println!("emoji: {}, char index: {}", emo.1, emo.0);
         }
 
-        assert_eq!(map_ord("😋"), OrdResult::Ord(0));
-        assert_eq!(map_ord("😛"), OrdResult::Ord(1));
-        assert_eq!(map_ord("😝"), OrdResult::Ord(2));
-        assert_eq!(map_ord("😜"), OrdResult::Ord(3));
-        assert_eq!(map_ord("🤪"), OrdResult::Ord(4));
-        assert_eq!(map_ord("🤨"), OrdResult::Ord(5));
-        assert_eq!(map_ord("🧐"), OrdResult::Ord(6));
-        assert_eq!(map_ord("🤓"), OrdResult::Ord(7));
-        assert_eq!(map_ord("🥸"), OrdResult::Ord(8));
-        assert_eq!(map_ord("🤩"), OrdResult::Ord(9));
-        assert_eq!(map_ord("🥳"), OrdResult::Ord(10));
-        assert_eq!(map_ord("😏"), OrdResult::Ord(11));
-        assert_eq!(map_ord("😒"), OrdResult::Ord(12));
-        assert_eq!(map_ord("😞"), OrdResult::Ord(13));
-        assert_eq!(map_ord("😔"), OrdResult::Ord(14));
-        assert_eq!(map_ord("😟"), OrdResult::Ord(15));
-        assert_eq!(map_ord("😕"), OrdResult::Ord(16));
-        assert_eq!(map_ord("🙁"), OrdResult::Ord(17));
-        assert_eq!(map_ord("😣"), OrdResult::Ord(18));
-        assert_eq!(map_ord("😖"), OrdResult::Ord(19));
-        assert_eq!(map_ord("😫"), OrdResult::Ord(20));
-        assert_eq!(map_ord("😩"), OrdResult::Ord(21));
-        assert_eq!(map_ord("🥺"), OrdResult::Ord(22));
-        assert_eq!(map_ord("😀"), OrdResult::Ord(23));
-        assert_eq!(map_ord("😃"), OrdResult::Ord(24));
-        assert_eq!(map_ord("😄"), OrdResult::Ord(25));
-        assert_eq!(map_ord("😁"), OrdResult::Ord(26));
-        assert_eq!(map_ord("😆"), OrdResult::Ord(27));
-        assert_eq!(map_ord("🤣"), OrdResult::Ord(28));
-        assert_eq!(map_ord("😊"), OrdResult::Ord(29));
-        assert_eq!(map_ord("😇"), OrdResult::Ord(30));
-        assert_eq!(map_ord("🙂"), OrdResult::Ord(31));
-        assert_eq!(map_ord("😉"), OrdResult::Ord(32));
-        assert_eq!(map_ord("😌"), OrdResult::Ord(33));
-        assert_eq!(map_ord("😍"), OrdResult::Ord(34));
-        assert_eq!(map_ord("🥰"), OrdResult::Ord(35));
-        assert_eq!(map_ord("😘"), OrdResult::Ord(36));
-        assert_eq!(map_ord("😗"), OrdResult::Ord(37));
-        assert_eq!(map_ord("😙"), OrdResult::Ord(38));
-        assert_eq!(map_ord("😚"), OrdResult::Ord(39));
-        assert_eq!(map_ord("哈哈"), OrdResult::Invalid);
+        assert_eq!(map_ord("😋"), OrdResult::Ord(1));
+        assert_eq!(map_emoji(1), "😋");
+        assert_eq!(map_ord("😛"), OrdResult::Ord(2));
+        assert_eq!(map_emoji(2), "😛");
+        assert_eq!(map_ord("😎"), OrdResult::Ord(43));
+        assert_eq!(map_emoji(43), "😎");
     }
 }
