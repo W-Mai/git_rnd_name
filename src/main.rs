@@ -127,18 +127,13 @@ fn main() {
     branch_ords.sort();
 
     let branch_ords = branch_ords.into_iter().collect::<HashSet<i32>>();
-    // 输出所有分支名称
-    println!("branches-with-indexes: {:?}", branch_name_ord_map);
-    println!("branches: {:?}", branch_names);
-    println!("branch-ords: {:?}", branch_ords);
 
     let mut new_ord = 1;
 
-    while branch_ords.contains(&new_ord) || branch_name_set.contains(&map_emoji(new_ord)){
+    while branch_ords.contains(&new_ord) || branch_name_set.contains(&map_emoji(new_ord)) {
         new_ord += 1;
     }
 
-    println!("new-ord: {}", new_ord);
     println!("new-branch-name: {}", map_emoji(new_ord));
 }
 
