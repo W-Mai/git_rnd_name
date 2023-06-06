@@ -1,68 +1,41 @@
+use std::collections::HashSet;
+
+use git2::BranchType;
+use iterator_ext::IteratorExt;
+
+use crate::utils::{map_emoji, map_ord, open_repo, parse_args};
+
 mod utils;
 
-use std::collections::{HashMap, HashSet};
-use std::process::exit;
-use git2::{BranchType};
-use crate::utils::{map_emoji, map_ord, open_repo, OrdResult, parse_args};
-
-fn main() {
+fn main() -> anyhow::Result<()> {
     let args = parse_args();
 
-    let remote_name = args.remote.clone();
-    let repo_path = args.repo.clone().unwrap_or(".".to_string());
+    let remote_name = args.remote.as_str();
+    let repo_path = args.repo.as_deref().unwrap_or(".");
+    let repo = open_repo(repo_path)?;
 
-    let repo = open_repo(repo_path.as_str()).unwrap_or_else(|| { exit(-1); });
+    let branch_names = repo.branches(Some(BranchType::Remote))?
+        .try_filter_map(|(branch, _)| {
+            // get name when not Error
+            branch.name().map(|name| {
+                // get name when not None
+                name.map(|name| {
+                    name.strip_prefix(remote_name)
+                        .map(|name| name.to_string())   // get own string when stripped
+                }).flatten()    // flatten Option<Option<_>> to Option<_>
+            })  // return Result<Option<String>, Error>
+        });
 
-    let branches = repo.branches(Some(BranchType::Remote)).unwrap().filter(|branch| {
-        match branch {
-            Ok((branch, _)) => {
-                let name = branch.name().unwrap().unwrap();
-                name.starts_with(remote_name.as_str())
-            }
-            Err(e) => {
-                println!("Error: Failed to get branch name: {}", e);
-                false
-            }
-        }
-    });
-
-    let branch_names = branches.map(|branch| {
-        let (branch, _) = branch.unwrap();
-        branch.name().unwrap().unwrap().strip_prefix(remote_name.as_str()).unwrap().to_string()
-    }).collect::<Vec<String>>();
-
-    let mut branch_name_set = HashSet::new();
-    for branch_name in branch_names.clone() {
-        branch_name_set.insert(branch_name);
-    }
-
-    let branch_name_ord_map = branch_names.clone().into_iter().map(|branch_name| {
-        let ord = map_ord(branch_name.as_str());
-        match ord {
-            OrdResult::Ord(i) => {
-                (branch_name, i)
-            }
-            OrdResult::Invalid => {
-                (branch_name, -1)
-            }
-        }
-    }).collect::<HashMap<String, i32>>();
-
-    let mut branch_ords = branch_name_ord_map.values().clone().filter(|i| {
-        **i != -1
-    }).map(|i| {
-        *i
-    }).collect::<Vec<i32>>();
-
-    branch_ords.sort();
-
-    let branch_ords = branch_ords.into_iter().collect::<HashSet<i32>>();
+    let branch_ords: HashSet<_> = branch_names
+        .try_filter_map(|name| Ok(map_ord(&name)))
+        .collect::<Result<_, _>>()?;    // throw the error if exists
 
     let mut new_ord = 1;
-
-    while branch_ords.contains(&new_ord) || branch_name_set.contains(&map_emoji(new_ord)) {
+    while branch_ords.contains(&new_ord) {
         new_ord += 1;
     }
 
     println!("new-branch-name: {}", map_emoji(new_ord));
+
+    Ok(())
 }
