@@ -2,6 +2,7 @@ use anyhow::anyhow;
 use clap::Parser;
 use git2::{Repository, RepositoryState};
 use thiserror::Error;
+use rand::seq::SliceRandom;
 
 pub const EMOJI_LIST: &str = "\
 ✊✋⬛🌍🌎🌏🌑🌒🌓🌔🌕🌖🌗🌘🌙🌚🌛🌜🌝🌞🌟🍇🍉🍊🍋🍌🍎🍏🍐🐃🐅🐆🐊🐋🐌🐍🐒🐔🐗🐘🐙🐛🐜🐝🐞🪳\
@@ -48,6 +49,13 @@ pub fn open_repo(path: &str) -> anyhow::Result<Repository> {
     check_repo(&repo)?;
     Ok(repo)
 }
+
+pub fn shuffle_string(s: &str) -> String {
+    let mut chars: Vec<char> = s.chars().collect();
+    chars.as_mut_slice().shuffle(&mut rand::thread_rng());
+    chars.into_iter().collect()
+}
+
 
 #[derive(Error, Debug)]
 pub enum RepoError {

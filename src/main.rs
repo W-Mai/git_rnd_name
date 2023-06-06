@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use git2::BranchType;
 use iterator_ext::IteratorExt;
 
-use crate::utils::{open_repo, parse_args};
+use crate::utils::{open_repo, parse_args, shuffle_string};
 use crate::anybase::{AnyBase};
 
 
@@ -28,7 +28,7 @@ fn main() -> anyhow::Result<()> {
             })  // return Result<Option<String>, Error>
         });
 
-    let emojibase = AnyBase::new(utils::EMOJI_LIST);
+    let emojibase = AnyBase::new(shuffle_string(utils::EMOJI_LIST).as_str());
 
     let branch_ords: HashSet<_> = branch_names
         .try_filter_map(|name| Ok(emojibase.map_ord(&name)))
