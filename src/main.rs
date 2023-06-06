@@ -1,11 +1,13 @@
-use std::collections::HashSet;
+mod utils;
+mod anybase;
 
+use std::collections::HashSet;
 use git2::BranchType;
 use iterator_ext::IteratorExt;
 
-use crate::utils::{map_emoji, map_ord, open_repo, parse_args};
+use crate::utils::{open_repo, parse_args};
+use crate::anybase::{AnyBase};
 
-mod utils;
 
 fn main() -> anyhow::Result<()> {
     let args = parse_args();
@@ -26,8 +28,10 @@ fn main() -> anyhow::Result<()> {
             })  // return Result<Option<String>, Error>
         });
 
+    let emojibase = AnyBase::new(utils::EMOJI_LIST);
+
     let branch_ords: HashSet<_> = branch_names
-        .try_filter_map(|name| Ok(map_ord(&name)))
+        .try_filter_map(|name| Ok(emojibase.map_ord(&name)))
         .collect::<Result<_, _>>()?;    // throw the error if exists
 
     let mut new_ord = 1;
@@ -35,7 +39,7 @@ fn main() -> anyhow::Result<()> {
         new_ord += 1;
     }
 
-    println!("new-branch-name: {}", map_emoji(new_ord));
+    println!("new-branch-name: {}", emojibase.map_emoji(new_ord));
 
     Ok(())
 }

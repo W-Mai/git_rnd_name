@@ -4,36 +4,12 @@ use git2::{Repository, RepositoryState};
 use thiserror::Error;
 
 pub const EMOJI_LIST: &str = "\
-✊✋⬛⭐️️️🌍🌎🌏🌑🌒🌓🌔🌕🌖🌗🌘🌙🌚🌛🌜🌝🌞🌟🍇🍉🍊🍋🍌🍎🍏🍐🐃🐅🐆🐊🐋🐌🐍🐒🐔🐗🐘🐙🐛🐜🐝🐞\
+✊✋⬛🌍🌎🌏🌑🌒🌓🌔🌕🌖🌗🌘🌙🌚🌛🌜🌝🌞🌟🍇🍉🍊🍋🍌🍎🍏🍐🐃🐅🐆🐊🐋🐌🐍🐒🐔🐗🐘🐙🐛🐜🐝🐞🪳\
 🐟🐠🐡🐢🐣🐤🐥🐦🐦🐧🐨🐪🐫🐬🐭🐮🐯🐰🐱🐳🐴🐵🐶🐷🐸🐹🐺🐻🐻🐼🐽👀👁👆👇👈👉👊👋👌👌👍👏👐👻👽\
 👿💀💨💩💪💫💫🕷🕸🖐🖖😀😁😂😃😄😆😇😈😉😉😊😋😌😌😍😎😏😐😑😒😔😕😖😗😘😙😚😛😜😝😦😧😨😪😬\
 😮😮😯😱😲😳😴😵😵😶😷😸😹😺😻😼😽😾😿🙀🙂🙈🙉🙊🙌🙏🤌🤏🤐🤑🤓🤔🤗🤘🤙🤚🤛🤜🤜🤝🤞🤟🤠🤡🤣🤣\
 🤤🤥🤨🤩🤪🤫🤭🤯🤲🥰🥱🥲🥳🥴🥶🥸🥺🦀🦁🦂🦄🦅🦆🦇🦈🦉🦊🦋🦍🦎🦏🦐🦑🦒🦓🦕🦖🦗🦘🦛🦞🦟🦣🦧🦬🦭\
-🦾🧐🧠🪐🪰🪱🪲🪳";
-
-pub type OrdResult = Option<usize>;
-
-pub fn map_ord(name: &str) -> OrdResult {
-    let ord_base = EMOJI_LIST.chars().count();
-    name.chars().try_fold(0, |res, c| {
-        EMOJI_LIST.chars()
-            .position(|e| e == c)
-            .map(|pos| res * ord_base + pos + 1)
-    })
-}
-
-pub fn map_emoji(ord: usize) -> String {
-    let ord_base = EMOJI_LIST.chars().count();
-    let mut ord_res = ord;
-    let mut result = String::new();
-    while ord_res > 0 {
-        ord_res -= 1;
-        let c = EMOJI_LIST.chars().nth(ord_res % ord_base).unwrap();
-        result.push(c);
-        ord_res /= ord_base;
-    }
-    result.chars().rev().collect()
-}
+🦾🧐🧠🪐🪰🪱🪲";
 
 #[derive(Parser, Debug)]
 #[command(author, version)]
@@ -81,6 +57,7 @@ pub enum RepoError {
 
 #[cfg(test)]
 mod tests {
+    use crate::anybase::AnyBase;
     use super::*;
 
     #[test]
@@ -89,16 +66,17 @@ mod tests {
             println!("emoji: {}, char index: {}", emo, i);
         }
 
+        let emojibase = AnyBase::new(EMOJI_LIST);
         macro_rules! assert_emoji_ord {
             ($emoji:expr, $ord:expr) => {
-                assert_eq!(map_ord($emoji), Some($ord));
-                assert_eq!(map_emoji($ord), $emoji);
+                assert_eq!(emojibase.map_ord($emoji), Some($ord));
+                assert_eq!(emojibase.map_emoji($ord), $emoji);
             };
         }
 
         assert_emoji_ord!("✊", 1);
-        assert_emoji_ord!("😎", 122);
-        assert_emoji_ord!("🪳", 241);
-        assert_emoji_ord!("✊✊", 242);
+        assert_emoji_ord!("😎", 119);
+        assert_emoji_ord!("🪳", 46);
+        assert_emoji_ord!("✊✊", 238);
     }
 }
