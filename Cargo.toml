@@ -1,6 +1,6 @@
 [package]
 name = "git_rnd_name"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Generate a random git branch name based on remote name you given."
 authors = ["BenginX", "X_Tu"]
