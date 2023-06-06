@@ -1,6 +1,7 @@
 use anyhow::anyhow;
 use clap::Parser;
 use git2::{Repository, RepositoryState};
+use log::{info, warn};
 use thiserror::Error;
 use rand::seq::SliceRandom;
 
@@ -22,6 +23,10 @@ pub struct Args {
     /// local repo path
     #[arg(short = 'c', long)]
     pub(crate) repo: Option<String>,
+
+    /// verbose mode
+    #[arg(short = 'v', long, action = clap::ArgAction::Count)]
+    pub(crate) verbose: u8,
 }
 
 pub fn parse_args() -> Args {
@@ -31,13 +36,13 @@ pub fn parse_args() -> Args {
 pub fn check_repo(repo: &Repository) -> anyhow::Result<()> {
     // 检查仓库状态
     if repo.state() != RepositoryState::Clean {
-        println!("Warning: The repository is not clean");
+        warn!("Warning: The repository is not clean");
     }
 
     // 获取当前分支名称
     let head = repo.head()?;
     if let Some(name) = head.name() {
-        println!("Current branch: {}", name);
+        info!("Current branch: {}", name);
         Ok(())
     } else {
         Err(anyhow!(RepoError::NotBranch))
@@ -71,7 +76,7 @@ mod tests {
     #[test]
     fn test_map_ord() {
         for (i, emo) in EMOJI_LIST.char_indices() {
-            println!("emoji: {}, char index: {}", emo, i);
+            info!("emoji: {}, char index: {}", emo, i);
         }
 
         let emojibase = AnyBase::new(EMOJI_LIST);

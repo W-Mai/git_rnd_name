@@ -4,13 +4,21 @@ mod anybase;
 use std::collections::HashSet;
 use git2::BranchType;
 use iterator_ext::IteratorExt;
+use env_logger::{Builder, Env};
 
 use crate::utils::{open_repo, parse_args, shuffle_string};
 use crate::anybase::{AnyBase};
 
-
 fn main() -> anyhow::Result<()> {
     let args = parse_args();
+
+    Builder::from_env(Env::default().default_filter_or(match args.verbose {
+        0 => "error",
+        1 => "warn",
+        2 => "info",
+        3 => "debug",
+        _ => "trace",
+    })).init();
 
     let remote_name = args.remote.as_str();
     let repo_path = args.repo.as_deref().unwrap_or(".");
@@ -39,7 +47,7 @@ fn main() -> anyhow::Result<()> {
         new_ord += 1;
     }
 
-    println!("new-branch-name: {}", emojibase.map_emoji(new_ord));
+    println!("{}", emojibase.map_emoji(new_ord));
 
     Ok(())
 }
