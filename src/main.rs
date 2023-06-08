@@ -1,13 +1,14 @@
+use std::collections::HashSet;
+
+use anyhow::anyhow;
+use env_logger::{Builder, Env};
+use iterator_ext::IteratorExt;
+
+use crate::anybase::AnyBase;
+use crate::utils::{AppError, create_new_branch, open_repo, parse_args, shuffle_string};
+
 mod utils;
 mod anybase;
-
-use std::collections::HashSet;
-use anyhow::anyhow;
-use iterator_ext::IteratorExt;
-use env_logger::{Builder, Env};
-
-use crate::utils::{create_new_branch, open_repo, parse_args, shuffle_string};
-use crate::anybase::{AnyBase};
 
 fn main() -> anyhow::Result<()> {
     let args = parse_args();
@@ -20,10 +21,18 @@ fn main() -> anyhow::Result<()> {
         _ => "trace",
     })).init();
 
-    let remote_name = args.remote + "/";
-    let remote_name = remote_name.as_str();
     let repo_path = args.repo.as_deref().unwrap_or(".");
     let repo = open_repo(repo_path)?;
+
+    // Obtain remote name from args or use default
+    let remote_name = if let Some(name) = args.remote { name } else {
+        let remotes = repo.remotes()?;
+        if remotes.len() != 1 {
+            return Err(anyhow!(AppError::RemoteNotSpecified));
+        }
+        remotes.get(0).unwrap().to_string()
+    };
+    let remote_name_prefix = remote_name.to_string() + "/";
 
     let branch_names = repo.branches(None)?
         .try_filter_map(|(branch, _)| {
@@ -32,8 +41,8 @@ fn main() -> anyhow::Result<()> {
                 // get name when not None
                 name.map(|name| {
                     if branch.get().is_remote() {
-                        name.strip_prefix(remote_name)
-                            .map(|name| name.to_string())   // get own string when stripped
+                        name.strip_prefix(&remote_name_prefix)
+                            .map(str::to_string)   // get own string when stripped
                     } else {
                         Some(name.to_string())
                     }
@@ -46,10 +55,6 @@ fn main() -> anyhow::Result<()> {
     let branch_ords: HashSet<_> = branch_names
         .try_filter_map(|name| Ok(emojibase.map_ord(&name)))
         .collect::<Result<_, _>>()?;    // throw the error if exists
-
-    if branch_ords.len() == 0 {
-        return Err(anyhow!("No remote branch found for {}", remote_name));
-    }
 
     let mut new_ord = 1;
     while branch_ords.contains(&new_ord) {

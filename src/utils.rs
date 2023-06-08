@@ -2,8 +2,8 @@ use anyhow::anyhow;
 use clap::Parser;
 use git2::{Repository, RepositoryState};
 use log::{info, warn};
-use thiserror::Error;
 use rand::seq::SliceRandom;
+use thiserror::Error;
 
 pub const EMOJI_LIST: &str = "\
 ✊✋⬛🌍🌎🌏🌑🌒🌓🌔🌕🌖🌗🌘🌙🌚🌛🌜🌝🌞🌟🍇🍉🍊🍋🍌🍎🍏🍐🐃🐅🐆🐊🐋🐌🐍🐒🐔🐗🐘🐙🐛🐜🐝🐞🐟\
@@ -17,7 +17,7 @@ pub const EMOJI_LIST: &str = "\
 #[command(about = "Generate a random git branch name based on remote name you given.")]
 pub struct Args {
     /// remote names
-    pub(crate) remote: String,
+    pub(crate) remote: Option<String>,
 
     /// local repo path
     #[arg(short = 'c', long)]
@@ -48,7 +48,7 @@ pub fn check_repo(repo: &Repository) -> anyhow::Result<()> {
         info!("Current branch: {}", name);
         Ok(())
     } else {
-        Err(anyhow!(RepoError::NotBranch))
+        Err(anyhow!(AppError::NotOnBranch))
     }
 }
 
@@ -77,14 +77,17 @@ pub fn shuffle_string(s: &str) -> String {
 
 
 #[derive(Error, Debug)]
-pub enum RepoError {
+pub enum AppError {
     #[error("Not on any branch")]
-    NotBranch,
+    NotOnBranch,
+    #[error("Multiple remotes, none specified")]
+    RemoteNotSpecified,
 }
 
 #[cfg(test)]
 mod tests {
     use crate::anybase::AnyBase;
+
     use super::*;
 
     #[test]
@@ -102,8 +105,8 @@ mod tests {
         }
 
         assert_emoji_ord!("✊", 1);
-        assert_emoji_ord!("😎", 119);
-        assert_emoji_ord!("🪳", 46);
-        assert_emoji_ord!("✊✊", 238);
+        assert_emoji_ord!("😎", 112);
+        assert_emoji_ord!("🪳", 227);
+        assert_emoji_ord!("✊✊", 228);
     }
 }
