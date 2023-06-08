@@ -44,10 +44,10 @@ grn --help
 ```bash
 Generate a random git branch name based on remote name you given.
 
-Usage: grn [OPTIONS] <REMOTE>
+Usage: grn [OPTIONS] [REMOTE]
 
 Arguments:
-  <REMOTE>  remote names
+  [REMOTE]  remote name
 
 Options:
   -c, --repo <REPO>  local repo path
@@ -62,7 +62,8 @@ Options:
 Chane to your git repository directory.
 
 ```bash
-grn origin
+grn
+grb origin
 ```
 
 > You will get a random name like `😁`
@@ -77,7 +78,7 @@ grn origin -b
 grn origin -c /path/to/repo
 ```
 
-> You will get a random name like `??` in `/path/to/repo`. If you add `-b` option, a new branch will be created.
+> You will get a random name like `🤔️` in `/path/to/repo`. If you add `-b` option, a new branch will be created.
 
 ## How to build
 
