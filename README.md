@@ -63,7 +63,7 @@ Chane to your git repository directory.
 
 ```bash
 grn
-grb origin
+grn origin
 ```
 
 > You will get a random name like `😁`
