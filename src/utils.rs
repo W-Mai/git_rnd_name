@@ -2,6 +2,7 @@ use std::borrow::Cow;
 use anyhow::anyhow;
 use clap::Parser;
 use git2::{Repository, RepositoryState};
+use iterator_ext::IteratorExt;
 use log::{info, warn};
 use rand::seq::SliceRandom;
 use thiserror::Error;
@@ -27,6 +28,10 @@ pub struct Args {
     /// create new branch
     #[arg(short = 'b', long)]
     pub(crate) branch: bool,
+
+    /// List all branches create by this tool and exit
+    #[arg(short = 'a', long)]
+    pub(crate) all: bool,
 
     /// verbose mode
     #[arg(short = 'v', long, action = clap::ArgAction::Count)]
@@ -68,6 +73,28 @@ pub fn create_new_branch(repo: &Repository, branch_name: Cow<str>) -> anyhow::Re
     repo.set_head(new_branch_ref.name().unwrap())?;
 
     Ok(())
+}
+
+pub fn get_all_branches(repo: &Repository, remote_name: String) -> anyhow::Result<Vec<String>> {
+    let remote_name_prefix = remote_name.to_string() + "/";
+
+    let branches = repo.branches(None)?
+        .try_filter_map(|(branch, _)| {
+            // get name when not Error
+            branch.name().map(|name| {
+                // get name when not None
+                name.map(|name| {
+                    if branch.get().is_remote() {
+                        name.strip_prefix(&remote_name_prefix)
+                            .map(str::to_string)   // get own string when stripped
+                    } else {
+                        Some(name.to_string())
+                    }
+                }).flatten()    // flatten Option<Option<_>> to Option<_>
+            })  // return Result<Option<String>, Error>
+        });
+    let res = branches.try_filter_map(|name| Ok(Some(name))).collect::<Result<_, _>>()?;
+    Ok(res)
 }
 
 pub fn shuffle_string(s: &str) -> String {

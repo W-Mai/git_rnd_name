@@ -2,10 +2,9 @@ use std::collections::HashSet;
 
 use anyhow::anyhow;
 use env_logger::{Builder, Env};
-use iterator_ext::IteratorExt;
 
 use crate::anybase::AnyBase;
-use crate::utils::{AppError, create_new_branch, open_repo, parse_args, shuffle_string};
+use crate::utils::{AppError, create_new_branch, open_repo, parse_args, shuffle_string, get_all_branches};
 
 mod utils;
 mod anybase;
@@ -32,29 +31,14 @@ fn main() -> anyhow::Result<()> {
         }
         remotes.get(0).unwrap().to_string()
     };
-    let remote_name_prefix = remote_name.to_string() + "/";
 
-    let branch_names = repo.branches(None)?
-        .try_filter_map(|(branch, _)| {
-            // get name when not Error
-            branch.name().map(|name| {
-                // get name when not None
-                name.map(|name| {
-                    if branch.get().is_remote() {
-                        name.strip_prefix(&remote_name_prefix)
-                            .map(str::to_string)   // get own string when stripped
-                    } else {
-                        Some(name.to_string())
-                    }
-                }).flatten()    // flatten Option<Option<_>> to Option<_>
-            })  // return Result<Option<String>, Error>
-        });
+    let branch_names = get_all_branches(&repo, remote_name.clone())?;
 
     let emojibase = AnyBase::new(shuffle_string(utils::EMOJI_LIST).as_str());
 
-    let branch_ords: HashSet<_> = branch_names
-        .try_filter_map(|name| Ok(emojibase.map_ord(&name)))
-        .collect::<Result<_, _>>()?;    // throw the error if exists
+    let branch_ords: HashSet<_> = branch_names.iter().filter_map(|name| {
+        emojibase.map_ord(name)
+    }).collect::<_>();
 
     let mut new_ord = 1;
     while branch_ords.contains(&new_ord) {
@@ -63,13 +47,18 @@ fn main() -> anyhow::Result<()> {
 
     let new_branch_name = emojibase.map_emoji(new_ord);
 
-
-    if args.branch {
-        create_new_branch(&repo, new_branch_name.clone())?;   // create new branch
-        println!("{} was created.", new_branch_name);
+    if args.all {
+        branch_ords.iter().for_each(|ord| {
+            let emoji = emojibase.map_emoji(*ord);
+            println!("{}", emoji);
+        });
     } else {
-        println!("{}", new_branch_name);
+        if args.branch {
+            create_new_branch(&repo, new_branch_name.clone())?;   // create new branch
+            println!("{} was created.", new_branch_name);
+        } else {
+            println!("{}", new_branch_name);
+        }
     }
-
     Ok(())
 }
