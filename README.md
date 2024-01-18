@@ -12,6 +12,7 @@ This is useful when you want to create a `PR` but you don't know what name you s
 - Create new branch with random names.
 - Support verbose mode.
 - Support custom local repository path.
+- Support show all branch created by this tool (fit the creation rules by this tool).
 
 You'll get a random name like this:
 
@@ -20,6 +21,22 @@ w-mai@MacBook-Pro ~/P/X/E/lvgl (😀)> git branch | column
   ☹️				 😟
   👌🏻				 😣
 * 😀				 😩
+  😁				 😫
+  😏				 🙁
+  😒				 🤓
+  😔				 🤩
+  😕				 🥳
+  😖				 🥺
+  😗				 🫢
+```
+
+or
+
+```bash
+w-mai@MacBook-Pro ~/P/X/E/lvgl (😀)> grn -a | column
+  ☹️				 😟
+  👌🏻				 😣
+  😀				 😩
   😁				 😫
   😏				 🙁
   😒				 🤓
@@ -47,11 +64,12 @@ Generate a random git branch name based on remote name you given.
 Usage: grn [OPTIONS] [REMOTE]
 
 Arguments:
-  [REMOTE]  remote name
+  [REMOTE]  remote names
 
 Options:
   -c, --repo <REPO>  local repo path
   -b, --branch       create new branch
+  -a, --all          List all branches create by this tool and exit
   -v, --verbose...   verbose mode
   -h, --help         Print help
   -V, --version      Print version
