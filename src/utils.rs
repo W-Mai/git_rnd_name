@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use anyhow::anyhow;
 use clap::Parser;
 use git2::{Repository, RepositoryState};
@@ -58,11 +59,11 @@ pub fn open_repo(path: &str) -> anyhow::Result<Repository> {
     Ok(repo)
 }
 
-pub fn create_new_branch(repo: &Repository, branch_name: &str) -> anyhow::Result<()> {
+pub fn create_new_branch(repo: &Repository, branch_name: Cow<str>) -> anyhow::Result<()> {
     let head = repo.head()?;
     let head_commit = head.peel_to_commit()?;
 
-    let new_branch = repo.branch(branch_name, &head_commit, false)?;
+    let new_branch = repo.branch(&*branch_name, &head_commit, false)?;
     let new_branch_ref = new_branch.into_reference();
     repo.set_head(new_branch_ref.name().unwrap())?;
 

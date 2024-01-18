@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 pub type OrdResult = Option<usize>;
 
 pub struct AnyBase {
@@ -21,15 +23,15 @@ impl AnyBase {
         })
     }
 
-    pub fn map_emoji(&self, ord: usize) -> String {
+    pub fn map_emoji(&self, ord: usize) -> Cow<str> {
         let mut ord_res = ord;
         let mut result = String::new();
         while ord_res > 0 {
             ord_res -= 1;
             let c = self.digits.chars().nth(ord_res % self.base).unwrap();
-            result.push(c);
+            result.insert(0, c);
             ord_res /= self.base;
         }
-        result.chars().rev().collect()
+        Cow::from(result)
     }
 }

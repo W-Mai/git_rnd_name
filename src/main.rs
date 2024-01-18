@@ -65,7 +65,7 @@ fn main() -> anyhow::Result<()> {
 
 
     if args.branch {
-        create_new_branch(&repo, &new_branch_name)?;   // create new branch
+        create_new_branch(&repo, new_branch_name.clone())?;   // create new branch
         println!("{} was created.", new_branch_name);
     } else {
         println!("{}", new_branch_name);
