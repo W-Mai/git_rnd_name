@@ -15,11 +15,11 @@ name = "grn"
 path = "src/main.rs"
 
 [dependencies]
-git2 = "0.17.1"
+git2 = "0.19.0"
 clap = { version = "4.3.1", features = ["derive"] }
-anyhow = "1.0.71"
+anyhow = "1.0.86"
 iterator-ext = "0.2.1"
-thiserror = "1.0.40"
+thiserror = "1.0.61"
 rand = "0.8.5"
-log = "0.4.18"
-env_logger = "0.10.0"
+log = "0.4.21"
+env_logger = "0.11.3"
