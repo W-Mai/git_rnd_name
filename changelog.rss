@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>git_rnd_name Changelog</title><link>http://127.0.0.1:7979/changelog</link><description>Changelog information for git_rnd_name</description><category domain="https://github.com/W-Mai/git_rnd_name">git_rnd_name Changelog</category><atom:link href="http://127.0.0.1:7979/changelog.rss" rel="self"/><item><title>v0.2.0 - 2026-03-02</title><link>http://127.0.0.1:7979/changelog/v0.2.0</link><category domain="https://github.com/W-Mai/git_rnd_name">git_rnd_name Changelog</category><guid>http://127.0.0.1:7979/changelog/v0.2.0</guid><content:encoded><![CDATA[<h3>Added</h3>
+<ul>
+<li>Deterministic emoji shuffle based on remote URL seed for consistent results per repo</li>
+<li>Random ord probing for visual diversity in multi-emoji branch names</li>
+<li><code>seed_from_remote_url</code> and <code>next_available_ord</code> utilities</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Lifetime warning in <code>map_emoji</code></li>
+<li>Clippy warnings: <code>explicit_auto_deref</code> and <code>map_flatten</code></li>
+</ul>
+]]></content:encoded></item><item><title>v0.1.6</title><link>http://127.0.0.1:7979/changelog/v0.1.6</link><category domain="https://github.com/W-Mai/git_rnd_name">git_rnd_name Changelog</category><guid>http://127.0.0.1:7979/changelog/v0.1.6</guid><content:encoded><![CDATA[<h3>Added</h3>
+<ul>
+<li>GitHub release configuration</li>
+<li>Cross-compilation support via Cross.toml</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Updated Clap to v4.5.7</li>
+<li>Bumped crate version</li>
+</ul>
+]]></content:encoded></item></channel></rss>
