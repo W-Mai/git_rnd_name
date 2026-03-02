@@ -1,0 +1,18 @@
+{
+  "components": {
+    "artifacts": {
+      "auto": true,
+      "cargo_dist": true
+    }
+  },
+  "styles": {
+    "theme": "cupcake"
+  },
+  "marketing": {
+    "analytics": {
+      "google": {
+        "tracking_id": "G-BWEF4S4HMQ"
+      }
+    }
+  }
+}
