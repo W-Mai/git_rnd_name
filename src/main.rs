@@ -5,7 +5,8 @@ use env_logger::{Builder, Env};
 
 use crate::anybase::AnyBase;
 use crate::utils::{
-    create_new_branch, get_all_branches, open_repo, parse_args, shuffle_string, AppError,
+    create_new_branch, get_all_branches, open_repo, parse_args, seed_from_remote_url,
+    shuffle_string, AppError,
 };
 
 mod anybase;
@@ -39,20 +40,19 @@ fn main() -> anyhow::Result<()> {
 
     let branch_names = get_all_branches(&repo, remote_name.clone())?;
 
-    let emojibase = AnyBase::new(shuffle_string(utils::EMOJI_LIST).as_str());
+    let seed = seed_from_remote_url(&repo, &remote_name);
+    let emojibase = AnyBase::new(shuffle_string(utils::EMOJI_LIST, seed).as_str());
 
     let branch_ords: HashSet<_> = branch_names
         .iter()
         .filter_map(|name| emojibase.map_ord(name))
         .collect::<_>();
 
-    let mut new_ord = 1;
-    while branch_ords.contains(&new_ord) {
-        new_ord += 1;
-    }
+    // Generate candidate ords using a seeded RNG for visual diversity,
+    // falling back to sequential scan if collisions persist
+    let new_ord = utils::next_available_ord(seed, &branch_ords);
 
     let new_branch_name = emojibase.map_emoji(new_ord);
-    
 
     if args.all {
         branch_ords.iter().for_each(|ord| {

@@ -17,13 +17,14 @@ impl AnyBase {
     pub fn map_ord(&self, name: &str) -> OrdResult {
         let ord_base = self.digits.chars().count();
         name.chars().try_fold(0, |res, c| {
-            self.digits.chars()
+            self.digits
+                .chars()
                 .position(|e| e == c)
                 .map(|pos| res * ord_base + pos + 1)
         })
     }
 
-    pub fn map_emoji(&self, ord: usize) -> Cow<str> {
+    pub fn map_emoji(&self, ord: usize) -> Cow<'_, str> {
         let mut ord_res = ord;
         let mut result = String::new();
         while ord_res > 0 {
